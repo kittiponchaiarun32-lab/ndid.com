@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ข้อมูลผู้อุ้มครอง</title>
+  <style>
+    /* Enhanced premium styling */
+    :root{--card-bg:#fff;--muted:#6b6b6b;--accent:#667eea;--accent-light:#764ba2}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Inter', '-apple-system', 'Segoe UI', 'Roboto', sans-serif;-webkit-font-smoothing:antialiased}
+    body{background:linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);background-size:400% 400%;animation:gradientShift 15s ease infinite;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;overflow-x:hidden;padding:40px 20px}
+    
+    @keyframes gradientShift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    /* centered card with premium design */
+    .card{max-width:480px;width:100%;background:var(--card-bg);border-radius:16px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4);animation:slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+
+    @keyframes slideUp{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .title{font-size:22px;color:#1a1a1a;font-weight:800;margin:0 0 6px;letter-spacing:-0.5px}
+    .subtitle{font-size:13px;color:#888;margin:0 0 24px;line-height:1.5}
+
+    .form-group{margin-bottom:18px}
+    label{display:block;font-size:13px;color:#4b4b4b;font-weight:600;margin-bottom:8px;letter-spacing:0.3px}
+    
+    input[type=text], input[type=email], input[type=tel], input[type=date], textarea, select{
+      width:100%;
+      padding:11px 12px;
+      border:1.5px solid #e0e0e0;
+      border-radius:10px;
+      font-size:14px;
+      font-family:inherit;
+      background:#fff;
+      color:#333;
+      transition:all 0.2s;
+    }
+    
+    input[type=text]:focus, input[type=email]:focus, input[type=tel]:focus, input[type=date]:focus, textarea:focus, select:focus{
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(102,126,234,0.1);
+      background:#f9faff;
+    }
+    
+    textarea{min-height:90px;resize:vertical}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row.full{grid-template-columns:1fr}
+
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:28px}
+    .btn{border:0;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);font-size:14px;letter-spacing:0.3px}
+    .btn.ghost{background:#f5f5f5;color:#333;border:1px solid #e0e0e0;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+    .btn.ghost:hover{background:#efefef;box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg, #ffd24d 0%, #f2b705 100%);color:#111;box-shadow:0 6px 20px rgba(242,183,5,0.4);font-weight:800}
+    .btn.primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(242,183,5,0.5)}
+    .btn.primary:active{transform:translateY(0);box-shadow:0 4px 12px rgba(242,183,5,0.3)}
+
+    /* responsive */
+    @media (max-width:600px){
+      body{padding:20px 16px}
+      .card{padding:24px}
+      .row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="cardTitle">
+    <h1 id="cardTitle" class="title">👤 ข้อมูลผู้อุ้มครอง</h1>
+    <p class="subtitle">กรุณากรอกข้อมูลที่ถูกต้องเพื่อประมวลผลคำขอของคุณ</p>
+
+    <!-- Display selected documents and benefit -->
+    <div id="selectedInfoBadge" style="display:none;margin-bottom:20px;padding:12px;background:#f0f4ff;border-radius:10px;border-left:4px solid #667eea">
+      <p style="margin:0 0 8px;font-size:12px;color:#667eea;font-weight:700;letter-spacing:0.3px">📋 ข้อมูลที่เลือก:</p>
+      <div id="selectedDocsAndBenefit" style="font-size:13px;color:#333;line-height:1.6"></div>
+    </div>
+
+    <form id="documentForm">
+      <!-- Date of birth -->
+      <div class="form-group">
+        <label for="birthDate">📅 วันเดือนปีเกิด</label>
+        <input type="date" id="birthDate" name="birthDate" placeholder="dd/mm/yyyy" required>
+      </div>
+
+      <!-- First name & Last name -->
+      <div class="row">
+        <div class="form-group">
+          <label for="firstName">ชื่อ</label>
+          <input type="text" id="firstName" name="firstName" placeholder="ชื่อ" required>
+        </div>
+        <div class="form-group">
+          <label for="lastName">นามสกุล</label>
+          <input type="text" id="lastName" name="lastName" placeholder="นามสกุล" required>
+        </div>
+      </div>
+
+      <!-- Insurance premium -->
+      <div class="form-group">
+        <label for="insurancePremium">💰 หมายเหตุเอกสารประกันสุขภาพ</label>
+        <input type="text" id="insurancePremium" name="insurancePremium" placeholder="ประกอบด้วย 13 หลัก">
+      </div>
+
+      <!-- ID -->
+      <div class="form-group">
+        <label for="idCard">🆔 เลขประจำตัวสัญญา</label>
+        <input type="text" id="idCard" name="idCard" placeholder="ประเมินปัจจัยที่เกี่ยว">
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">📧 E-mail (ถ้ามี)</label>
+        <input type="email" id="email" name="email" placeholder="อีเมลของคุณ (ไม่บังคับ)">
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label for="notes">📝 ข้อมูลเพิ่มเติมสรุปโปรแกรมอื่นเพิ่มเติม</label>
+        <textarea id="notes" name="notes" placeholder="ระบุข้อมูลหรือความต้องการพิเศษ"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" onclick="window.location.href='doc-select.html'">ย้อนกลับ</button>
+  <button type="button" class="btn ghost" onclick="window.location.href='account-entry.html'">จัดการบัญชี</button>
+        <button type="submit" class="btn primary">ถัดไป</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const formKey = 'document_info';
+    const selectedDocsKey = 'selected_docs';
+    const selectedBenefitKey = 'selected_benefit';
+    const form = document.getElementById('documentForm');
+    const selectedInfoBadge = document.getElementById('selectedInfoBadge');
+    const selectedDocsAndBenefit = document.getElementById('selectedDocsAndBenefit');
+
+    // Display selected documents and benefit from previous pages
+    function displaySelectedInfo(){
+      try{
+        let htmlContent = '';
+        
+        // Get benefit
+        const benefit = localStorage.getItem(selectedBenefitKey);
+        if(benefit){
+          const benefitLabels = {
+            'DPA': '📱 DPA',
+            'Health': '🏥 ประกันสุขภาพ',
+            'Life': '❤️ ประกันชีวิต',
+            'Other': '✏️ อื่นๆ'
+          };
+          htmlContent += `<div style="margin-bottom:8px"><strong>ประเภทเบี้ย:</strong> ${benefitLabels[benefit] || benefit}</div>`;
+        }
+
+        // Get documents
+        const docs = JSON.parse(localStorage.getItem(selectedDocsKey) || '[]');
+        if(docs.length > 0){
+          htmlContent += `<div><strong>เอกสารที่เลือก:</strong><br>${docs.map(doc => `✓ ${doc}`).join('<br>')}</div>`;
+        }
+
+        if(htmlContent){
+          selectedDocsAndBenefit.innerHTML = htmlContent;
+          selectedInfoBadge.style.display = 'block';
+        }
+      }catch(e){ console.error(e) }
+    }
+
+    // Load saved data
+    function loadData(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(formKey) || '{}');
+        Object.keys(saved).forEach(key => {
+          const field = document.getElementById(key);
+          if(field) field.value = saved[key];
+        });
+      }catch(e){ console.error(e) }
+    }
+
+    // Save on submit
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const obj = Object.fromEntries(data);
+      
+      // Validate required fields
+      if(!obj.birthDate || !obj.firstName || !obj.lastName){
+        alert('กรุณากรอกข้อมูลที่จำเป็น (วันเดือนปี ชื่อ นามสกุล)');
+        return;
+      }
+
+      localStorage.setItem(formKey, JSON.stringify(obj));
+      // Navigate to confirmation page
+      window.location.href = 'confirmation.html';
+    });
+
+    // Auto-save on input
+    form.addEventListener('change', () => {
+      const data = new FormData(form);
+      const obj = Object.fromEntries(data);
+      localStorage.setItem(formKey, JSON.stringify(obj));
+    });
+
+    displaySelectedInfo();
+    loadData();
+  </script>
+</body>
+</html>

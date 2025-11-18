@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>กรอกบัญชีใหม่</title>
+  <style>
+    :root{--bg1:#667eea;--bg2:#4facfe;--card:#fff;--muted:#6b6b6b;--accent:#ffd24d}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif}
+    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:flex-start;justify-content:center;padding:36px}
+
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:14px;padding:22px 22px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+    .title{display:flex;align-items:center;gap:12px}
+    .title h1{margin:0;font-size:20px;color:#16325c}
+    .subtitle{margin:8px 0 18px;color:var(--muted);font-size:13px}
+
+    .badge{padding:12px;background:#f0f6ff;border-radius:10px;border-left:4px solid #cfe0ff;margin-bottom:16px}
+    .badge strong{color:#1b6fe0}
+
+    form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{display:block;font-size:13px;color:#444;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #e6eefc;font-size:14px}
+    textarea{min-height:80px}
+
+    .section{margin-bottom:14px}
+
+    .actions{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:16px}
+    .btn{padding:12px 16px;border-radius:10px;border:0;font-weight:800;cursor:pointer}
+    .btn.ghost{background:#f3f4f6;color:#222}
+    .btn.primary{background:linear-gradient(135deg,var(--accent) 0%, #f2b705 100%);color:#111}
+
+    @media(max-width:520px){.card{padding:18px}.title h1{font-size:18px}.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="title">
+      <div style="font-size:28px">🏦</div>
+      <h1>กรอกบัญชีธนาคารใหม่</h1>
+    </div>
+    <p class="subtitle">กรอกข้อมูลบัญชีที่จะแนบกับคำขอของคุณ (บัญชีเล่ม)</p>
+
+    <div class="badge" id="selectedBadge" style="display:none">
+      <div style="font-size:13px;color:#1b6fe0;font-weight:700">ข้อมูลที่เลือก:</div>
+      <div id="selectedList" style="margin-top:6px;color:#333;font-size:13px"></div>
+    </div>
+
+    <form id="accountForm">
+      <div class="section">
+        <label>ธนาคาร</label>
+        <select id="bank" required>
+          <option value="">-- เลือกธนาคาร --</option>
+          <option>ธนาคารกรุงเทพ</option>
+          <option>ธนาคารกสิกรไทย</option>
+          <option>ธนาคารไทยพาณิชย์</option>
+          <option>ธนาคารออมสิน</option>
+          <option>ธนาคารทหารไทย</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+
+      <div class="section row">
+        <div>
+          <label>ประเภทเงินฝาก</label>
+          <input id="depositType" placeholder="ออมทรัพย์ / กระแสรายวัน">
+        </div>
+        <div>
+          <label>ประเภทการใช้งาน</label>
+          <input id="usageType" placeholder="เบิก / ฝาก / โอน">
+        </div>
+      </div>
+
+      <div class="section">
+        <label>ยอดเงินคงเหลือ</label>
+        <input id="balance" placeholder="ยอดเงิน ณ วันที่ยื่น">
+      </div>
+
+      <div class="section">
+        <label>หมายเหตุ (ถ้ามี)</label>
+        <textarea id="notes" placeholder="หมายเหตุเพิ่มเติม"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" onclick="window.location.href='document-info.html'">ย้อนกลับ</button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn ghost" onclick="window.location.href='account-details.html'">ดูบัญชีทั้งหมด</button>
+          <button type="submit" class="btn primary">บันทึกบัญชี</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById('accountForm');
+    const storageKey = 'bank_accounts';
+    const selectedDocsKey = 'selected_docs';
+    const selectedBadge = document.getElementById('selectedBadge');
+    const selectedList = document.getElementById('selectedList');
+
+    function loadSelectedDocs(){
+      try{
+        const docs = JSON.parse(localStorage.getItem(selectedDocsKey) || '[]');
+        if(docs.length){
+          selectedBadge.style.display = 'block';
+          selectedList.innerHTML = docs.map(d=>`• ${d}`).join('<br>');
+        }
+      }catch(e){console.error(e)}
+    }
+
+    function loadAccounts(){
+      try{ return JSON.parse(localStorage.getItem(storageKey) || '[]') }catch(e){return []}
+    }
+    function saveAccounts(list){ localStorage.setItem(storageKey, JSON.stringify(list)); }
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const account = {
+        bank: document.getElementById('bank').value,
+        depositType: document.getElementById('depositType').value,
+        usageType: document.getElementById('usageType').value,
+        balance: document.getElementById('balance').value,
+        notes: document.getElementById('notes').value
+      };
+
+      if(!account.bank){ alert('กรุณาเลือกธนาคาร'); return; }
+
+      const list = loadAccounts();
+      list.push(account);
+      saveAccounts(list);
+      alert('บันทึกบัญชีเรียบร้อย');
+      // return to document info so user can continue
+      window.location.href = 'document-info.html';
+    });
+
+    loadSelectedDocs();
+  </script>
+</body>
+</html>
