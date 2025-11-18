@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ข้อมูลบัญชีธนาคาร</title>
+  <style>
+    :root{
+      --bg1: #667eea;
+      --bg2: #764ba2;
+      --accent:#ffd24d;
+      --card-bg:#ffffff;
+      --muted:#6b6b6b;
+      --glass: rgba(255,255,255,0.9);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, sans-serif;-webkit-font-smoothing:antialiased}
+    body{background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 60%);display:flex;align-items:flex-start;justify-content:center;padding:36px}
+
+    .container{width:100%;max-width:900px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,0.25);}
+    .header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:68px;height:68px;border-radius:12px;background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px}
+    .title-wrap{flex:1}
+    h1{margin:0;font-size:20px;color:#fff}
+    p.lead{margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px}
+
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .toolbar-left{display:flex;gap:8px;align-items:center}
+    .toolbar-right{display:flex;gap:8px;align-items:center}
+
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:800;font-size:13px}
+    .btn.primary{background:var(--accent);color:#111}
+    .btn.ghost{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.06)}
+    .btn.icon{padding:9px 10px;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff}
+
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+
+    .panel{background:var(--card-bg);border-radius:12px;padding:14px}
+    .accounts{display:flex;flex-direction:column;gap:12px}
+
+    .account-card{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:10px;border:1px solid #eef2ff;background:#ffffff}
+    .account-meta{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+    .account-body{flex:1}
+    .account-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .account-title{font-weight:800;color:#16325c;margin:0}
+    .badge{font-size:12px;padding:6px 8px;border-radius:8px;background:#f3f4f6;color:#333}
+    .account-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    label{display:block;font-size:12px;color:#666;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;font-size:13px}
+    textarea{min-height:64px}
+
+    .card-actions{display:flex;gap:8px;align-items:center}
+    .small{font-size:12px;color:#666}
+
+    .empty{padding:28px;text-align:center;color:#777}
+
+    @media (max-width:920px){
+      .grid{grid-template-columns:1fr}
+      .account-fields{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+    <div class="header">
+      <div class="logo">฿</div>
+      <div class="title-wrap">
+        <h1>ข้อมูลบัญชีธนาคาร (บัญชีเล่ม)</h1>
+        <p class="lead">เพิ่มรายละเอียดบัญชีธนาคารที่ต้องการใช้ (บัญชีเล่มที่ 1, 2 ...). ข้อมูลเก็บบนเครื่อง และสามารถแนบกับคำขอได้</p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button id="btnAdd" class="btn primary">+ เพิ่มบัญชีใหม่</button>
+        <button id="btnImport" class="btn ghost">นำเข้า CSV</button>
+        <button id="btnExport" class="btn ghost">ส่งออก CSV</button>
+      </div>
+      <div class="toolbar-right">
+        <div class="small">เก็บที่: <code>bank_accounts</code></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="accounts" id="accounts"></div>
+      </div>
+
+      <aside class="panel">
+        <h3 style="margin-top:0">คำอธิบาย</h3>
+        <p class="small">คุณสามารถเพิ่มบัญชีธนาคารหลายบัญชีได้ แต่ละรายการสามารถแก้ไข ย้ายตำแหน่ง หรือลบได้ บันทึกจะทำงานอัตโนมัติเมื่อแก้ไข</p>
+        <div style="height:12px"></div>
+        <div style="font-size:13px;color:#444"><strong>เคล็ดลับ</strong>
+          <ul style="padding-left:18px;margin:8px 0 0">
+            <li>ใช้ปุ่ม <strong>ส่งออก CSV</strong> เพื่อสำรองข้อมูล</li>
+            <li>นำเข้าไฟล์ CSV เพื่อเพิ่มหลายบัญชีพร้อมกัน</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:18px">
+      <button class="btn ghost" onclick="window.history.back()">ย้อนกลับ</button>
+      <button class="btn primary" onclick="saveAndContinue()">บันทึกและไปต่อ</button>
+    </div>
+  </main>
+
+  <input type="file" id="fileInput" style="display:none" accept=".csv,text/csv" />
+
+  <script>
+    const storageKey = 'bank_accounts';
+    const accountsEl = document.getElementById('accounts');
+    const btnAdd = document.getElementById('btnAdd');
+    const btnExport = document.getElementById('btnExport');
+    const btnImport = document.getElementById('btnImport');
+    const fileInput = document.getElementById('fileInput');
+
+    function loadAccounts(){
+      try{
+        const raw = localStorage.getItem(storageKey) || '[]';
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){console.error(e);return []}
+    }
+
+    function saveAccounts(list){
+      localStorage.setItem(storageKey, JSON.stringify(list));
+    }
+
+    function render(){
+      const list = loadAccounts();
+      accountsEl.innerHTML = '';
+        if(!list.length){
+          accountsEl.innerHTML = '<div class="empty">ยังไม่มีบัญชี กรุณาเพิ่มบัญชีใหม่</div>';
+          return;
+        }
+
+        list.forEach((acc, idx) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'account-card';
+          wrapper.dataset.idx = idx;
+
+          wrapper.innerHTML = `
+            <div class="account-meta">${(idx+1)}</div>
+            <div class="account-body">
+              <div class="account-head">
+                <div>
+                  <p class="account-title">${escapeHtml(acc.bank||'ธนาคารที่ไม่ได้ระบุ')}</p>
+                  <div class="small" style="margin-top:4px">${escapeHtml(acc.depositType||'ประเภทเงินฝาก - ไม่ระบุ')}</div>
+                </div>
+                <div class="card-actions">
+                  <button class="btn icon" data-action="move-up" title="ย้ายขึ้น">⬆</button>
+                  <button class="btn icon" data-action="move-down" title="ย้ายลง">⬇</button>
+                  <button class="btn icon" data-action="remove" title="ลบ">✖</button>
+                </div>
+              </div>
+
+              <div class="account-fields">
+                <div>
+                  <label>ประเภทการใช้ทำธุรกรรม</label>
+                  <input data-field="usageType" value="${escapeHtml(acc.usageType||'')}" placeholder="เช่น เบิก/ฝาก/โอน">
+                </div>
+                <div>
+                  <label>ยอดเงินคงเหลือ</label>
+                  <input data-field="balance" value="${escapeHtml(acc.balance||'')}" placeholder="ยอดเงิน ณ วันที่ยื่น">
+                </div>
+              </div>
+
+              <div style="margin-top:8px">
+                <label>หมายเหตุ (ถ้ามี)</label>
+                <textarea data-field="notes" placeholder="หมายเหตุเพิ่มเติม">${escapeHtml(acc.notes||'')}</textarea>
+              </div>
+            </div>
+          `;
+
+          // wire controls
+          wrapper.querySelectorAll('[data-field]').forEach(el=>{
+            el.addEventListener('input', () => onFieldChange(idx));
+          });
+
+          wrapper.querySelectorAll('[data-action]').forEach(btn=>{
+            btn.addEventListener('click', (e)=>{
+              const action = btn.dataset.action;
+              if(action === 'remove') removeAccount(idx);
+              if(action === 'move-up') moveAccount(idx, -1);
+              if(action === 'move-down') moveAccount(idx, +1);
+            });
+          });
+
+          accountsEl.appendChild(wrapper);
+        });
+    }
+
+    function onFieldChange(index){
+      const wrapper = accountsEl.querySelector(`[data-idx="${index}"]`) || accountsEl.children[index];
+      const list = loadAccounts();
+      const node = accountsEl.children[index];
+      if(!node) return;
+      const inputs = node.querySelectorAll('[data-field]');
+      inputs.forEach(inp => {
+        const field = inp.dataset.field;
+        list[index][field] = inp.value;
+      });
+      saveAccounts(list);
+    }
+
+    function addAccount(){
+      const list = loadAccounts();
+      list.push({ bank:'', depositType:'', usageType:'', balance:'', notes:'' });
+      saveAccounts(list);
+      render();
+      // focus last bank input
+      setTimeout(()=>{
+        const last = accountsEl.lastElementChild;
+        if(last) last.querySelector('[data-field="bank"]').focus();
+      },50);
+    }
+
+    function removeAccount(idx){
+      const list = loadAccounts();
+      list.splice(idx,1);
+      saveAccounts(list);
+      render();
+    }
+
+    function moveAccount(idx, dir){
+      const list = loadAccounts();
+      const to = idx + dir;
+      if(to < 0 || to >= list.length) return;
+      const item = list.splice(idx,1)[0];
+      list.splice(to,0,item);
+      saveAccounts(list);
+      render();
+    }
+
+    function exportCSV(){
+      const list = loadAccounts();
+      if(!list.length){alert('ไม่มีข้อมูลส่งออก');return}
+      let csv = 'bank,depositType,usageType,balance,notes\n';
+      list.forEach(r=>{
+        csv += `"${(r.bank||'').replace(/"/g,'""')}","${(r.depositType||'').replace(/"/g,'""')}","${(r.usageType||'').replace(/"/g,'""')}","${(r.balance||'').replace(/"/g,'""')}","${(r.notes||'').replace(/"/g,'""') }"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `bank_accounts_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    function importCSV(content){
+      // simple CSV parse (no library)
+      const lines = content.split(/\r?\n/).filter(l=>l.trim());
+      if(!lines.length) return;
+      const rows = lines.map(l => parseCSVLine(l));
+      // header detection
+      if(rows.length && rows[0].some(h=>/bank|deposit/i.test(h))){
+        rows.shift();
+      }
+      const list = rows.map(r=>({ bank:r[0]||'', depositType:r[1]||'', usageType:r[2]||'', balance:r[3]||'', notes:r[4]||'' }));
+      saveAccounts(list);
+      render();
+    }
+
+    function parseCSVLine(line){
+      const out = [];
+      let cur = '';
+      let inQuotes = false;
+      for(let i=0;i<line.length;i++){
+        const ch = line[i];
+        if(ch === '"'){
+          if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; continue; }
+          inQuotes = !inQuotes; continue;
+        }
+        if(ch === ',' && !inQuotes){ out.push(cur); cur=''; continue; }
+        cur += ch;
+      }
+      out.push(cur);
+      return out.map(s=>s.trim());
+    }
+
+    function escapeHtml(s){
+      return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    btnAdd.addEventListener('click', addAccount);
+    btnExport.addEventListener('click', exportCSV);
+    btnImport.addEventListener('click', ()=>fileInput.click());
+
+    fileInput.addEventListener('change', (e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = () => importCSV(reader.result);
+      reader.readAsText(f,'utf-8');
+      e.target.value = '';
+    });
+
+    function saveAndContinue(){
+      // already saved on change; just navigate back to confirmation
+      alert('บันทึกข้อมูลบัญชีเรียบร้อย');
+      window.location.href = 'confirmation.html';
+    }
+
+    // init
+    (function(){
+      // ensure there is at least one slot if empty
+      const list = loadAccounts();
+      if(!list.length){ saveAccounts([]); }
+      render();
+    })();
+  </script>
+</body>
+</html>

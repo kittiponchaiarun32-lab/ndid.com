@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ประกาศอกผู้รับบำนาญ</title>
+  <style>
+    /* Enhanced premium styling */
+    :root{--card-bg:#fff;--muted:#6b6b6b;--accent:#667eea;--accent-light:#764ba2}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Inter', '-apple-system', 'Segoe UI', 'Roboto', sans-serif;-webkit-font-smoothing:antialiased}
+    body{background:linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);background-size:400% 400%;animation:gradientShift 15s ease infinite;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;overflow-x:hidden;padding:40px 20px}
+    
+    @keyframes gradientShift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    /* centered card with premium design */
+    .card{max-width:520px;width:100%;background:var(--card-bg);border-radius:16px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.4);animation:slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+
+    @keyframes slideUp{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .title{font-size:22px;color:#1a1a1a;font-weight:800;margin:0 0 6px;letter-spacing:-0.5px}
+    .subtitle{font-size:13px;color:#888;margin:0 0 24px;line-height:1.5}
+
+    /* Radio button selection */
+    .benefit-options{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+    
+    .benefit-option{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:16px;
+      border:2px solid #e0e0e0;
+      border-radius:12px;
+      cursor:pointer;
+      transition:all 0.2s;
+      background:#fff;
+    }
+
+    .benefit-option:hover{
+      border-color:#667eea;
+      background:#f9faff;
+    }
+
+    .benefit-option input[type=radio]{
+      appearance:none;
+      width:20px;
+      height:20px;
+      margin-top:2px;
+      border:2px solid #e0e0e0;
+      border-radius:50%;
+      cursor:pointer;
+      background:#fff;
+      transition:all 0.2s;
+      flex-shrink:0;
+      position:relative;
+    }
+
+    .benefit-option input[type=radio]:checked{
+      background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color:transparent;
+      box-shadow:0 4px 12px rgba(102,126,234,0.4);
+    }
+
+    .benefit-option input[type=radio]:checked::after{
+      content:'✓';
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      color:#fff;
+      font-weight:800;
+      font-size:12px;
+    }
+
+    .benefit-content{flex:1}
+    .benefit-title{font-size:15px;color:#1a1a1a;font-weight:700;margin:0 0 4px}
+    .benefit-desc{font-size:13px;color:#666;margin:0 0 8px;line-height:1.4}
+    .benefit-detail{font-size:12px;color:#999;margin:0;line-height:1.3}
+
+    .benefit-option input[type=radio]:checked ~ .benefit-content .benefit-title{color:#667eea}
+
+    /* Benefit info box */
+    .info-box{
+      padding:14px;
+      background:#f0f4ff;
+      border-radius:10px;
+      border-left:4px solid #667eea;
+      margin-bottom:20px;
+    }
+
+    .info-box p{
+      margin:0;
+      font-size:12px;
+      color:#333;
+      line-height:1.5;
+    }
+
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:28px}
+    .btn{border:0;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);font-size:14px;letter-spacing:0.3px}
+    .btn.ghost{background:#f5f5f5;color:#333;border:1px solid #e0e0e0;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+    .btn.ghost:hover{background:#efefef;box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg, #ffd24d 0%, #f2b705 100%);color:#111;box-shadow:0 6px 20px rgba(242,183,5,0.4);font-weight:800}
+    .btn.primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(242,183,5,0.5)}
+    .btn.primary:active{transform:translateY(0);box-shadow:0 4px 12px rgba(242,183,5,0.3)}
+    .btn:disabled{opacity:0.6;cursor:not-allowed}
+
+    /* responsive */
+    @media (max-width:600px){
+      body{padding:20px 16px}
+      .card{padding:24px}
+      .benefit-option{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="cardTitle">
+    <h1 id="cardTitle" class="title">💰 ประกาศอกผู้รับบำนาญ</h1>
+    <p class="subtitle">เลือกประเภทเบี้ยประกันภัยที่ต้องการ</p>
+
+    <div class="info-box">
+      <p>📋 เลือกประเภทผลประโยชน์ที่คุณต้องการรับจากรายการด้านล่าง</p>
+    </div>
+
+    <div class="benefit-options" id="benefitOptions">
+      <label class="benefit-option">
+        <input type="radio" name="benefit" value="DPA" required>
+        <div class="benefit-content">
+          <div class="benefit-title">📱 ผลิตภัณฑ์ประกันภัย DPA</div>
+          <div class="benefit-desc">ผลิตภัณฑ์ประกันภัยรูปแบบ 1 ล้านบาท 1 บิชิต วงเงิน</div>
+          <div class="benefit-detail">• ผลิตภัณฑ์วงเงิน 4 ล้านบาท จึงปรับปรุงการรับเงิน คิน</div>
+          <div class="benefit-detail">• 1. ค่ิคอ 1441 อบ.เอ.ระเบินระเบียนประกันภัยบิชิตวี</div>
+          <div class="benefit-detail">• 2. ค่ิคอ 1158 เพิ่มเสริมรับบำนาญคำกรรมการเพิ่ม</div>
+          <div class="benefit-detail">• 3. คิคอ็บติ่งสำเร็จรับบริษัทวิธีหนึ่งคืนแต่ยวอีลม</div>
+        </div>
+      </label>
+
+      <label class="benefit-option">
+        <input type="radio" name="benefit" value="Health" required>
+        <div class="benefit-content">
+          <div class="benefit-title">🏥 ประกันสุขภาพครบครัน</div>
+          <div class="benefit-desc">ประกันสุขภาพครอบครัวแบบครบครัน</div>
+          <div class="benefit-detail">• ครอบคลุมค่ารักษาพยาบาล ทั่วโลก</div>
+          <div class="benefit-detail">• ผลิตภัณฑ์ประกันสุขภาพแบบละเอียด</div>
+          <div class="benefit-detail">• บริหารจัดการกองทุนอย่างเป็นระบบ</div>
+        </div>
+      </label>
+
+      <label class="benefit-option">
+        <input type="radio" name="benefit" value="Life" required>
+        <div class="benefit-content">
+          <div class="benefit-title">❤️ ประกันชีวิตมูลค่าสูง</div>
+          <div class="benefit-desc">ประกันชีวิตหลักครอบครัวแบบมูลค่าสูง</div>
+          <div class="benefit-detail">• เบี้ยประกันอยู่ในเกณฑ์ปกติ</div>
+          <div class="benefit-detail">• ความคุ้มครองสูงสุด และทรราษฎร</div>
+          <div class="benefit-detail">• บริหารด้วยทีมผู้เชี่ยวชาญ</div>
+        </div>
+      </label>
+
+      <label class="benefit-option">
+        <input type="radio" name="benefit" value="Other" required>
+        <div class="benefit-content">
+          <div class="benefit-title">✏️ อื่นๆ</div>
+          <div class="benefit-desc">ประเภทเบี้ยประกันภัยอื่นๆ นอกเหนือจากข้างต้น</div>
+          <div class="benefit-detail">• กรุณาระบุรายละเอียดเพิ่มเติม</div>
+        </div>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" onclick="window.location.href='doc-select.html'">ย้อนกลับ</button>
+      <button type="button" id="btnNext" class="btn primary" disabled>ถัดไป</button>
+    </div>
+  </main>
+
+  <script>
+    const key = 'selected_benefit';
+    const benefitOptions = document.getElementById('benefitOptions');
+    const btnNext = document.getElementById('btnNext');
+
+    // Load saved selection
+    function loadSelection(){
+      try{
+        const saved = localStorage.getItem(key);
+        if(saved){
+          const radio = benefitOptions.querySelector(`input[value="${saved}"]`);
+          if(radio) {
+            radio.checked = true;
+            btnNext.disabled = false;
+          }
+        }
+      }catch(e){ console.error(e) }
+    }
+
+    // Enable Next button when selection made
+    benefitOptions.addEventListener('change', (e) => {
+      if(e.target.type === 'radio' && e.target.checked){
+        localStorage.setItem(key, e.target.value);
+        btnNext.disabled = false;
+      }
+    });
+
+    // Next button handler
+    btnNext.addEventListener('click', () => {
+      const selected = benefitOptions.querySelector('input[type=radio]:checked');
+      if(selected){
+        localStorage.setItem(key, selected.value);
+        window.location.href = 'document-info.html';
+      }
+    });
+
+    loadSelection();
+  </script>
+</body>
+</html>

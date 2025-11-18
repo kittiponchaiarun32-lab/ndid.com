@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>แบบฟอร์มสั่งซื้อ / บันทึกข้อมูล — ห้างทอง</title>
+  <style>
+    :root{
+      --muted:#6b6b6b;
+      --gold-1:#FFD700;
+      --gold-2:#FDB931;
+      --accent:#b8860b;
+      --bg:#fbfaf6;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;margin:0;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    header img{height:46px}
+    h1{margin:0 0 6px;color:#5b3a08;font-size:22px}
+    p.small{margin:0;color:var(--muted)}
+
+    form{background:linear-gradient(180deg,#fff,#fffaf0);padding:20px;border-radius:14px;box-shadow:0 6px 24px rgba(87,66,22,0.08);border:1px solid rgba(200,170,80,0.12)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .col{flex:1;min-width:180px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:#4b3a1a}
+    input[type=text],input[type=email],input[type=tel],select,textarea,input[type=number],input[type=file]{width:100%;padding:10px;border:1px solid #efe6d0;border-radius:10px;background:#fff}
+    textarea{min-height:100px}
+    .actions{display:flex;gap:10px;align-items:center;margin-top:8px}
+    .btn{background:linear-gradient(90deg,var(--gold-1),var(--gold-2));color:#111;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:0 6px 14px rgba(253,185,60,0.18)}
+    .btn.secondary{background:#fff;color:var(--accent);border:1px solid #f0e4c0;box-shadow:none}
+
+    .image-preview{width:96px;height:96px;border-radius:10px;background:#fff;border:1px dashed #f0e0b0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .image-preview img{width:100%;height:100%;object-fit:cover}
+
+    .list{margin-top:18px}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th,td{padding:12px;text-align:left;font-size:14px;vertical-align:middle}
+    thead th{color:#5b3a1a;font-weight:700;font-size:13px}
+    tbody tr{background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(86,64,23,0.04)}
+    tbody tr td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+    tbody tr td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+    .muted{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px}
+
+    .toast{position:fixed;right:18px;bottom:18px;background:#2b2b2b;color:#fff;padding:10px 14px;border-radius:8px;opacity:0;transform:translateY(12px);transition:all .28s}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    @media (max-width:900px){.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>แบบฟอร์มสั่งซื้อ / บันทึกข้อมูล</h1>
+    <p class="small">กรอกข้อมูลลูกค้าและรายละเอียดสินค้าที่ต้องการ สตอร์จข้อมูลจะเก็บในเครื่อง (localStorage) คุณสามารถส่งออกเป็นไฟล์ CSV</p>
+
+    <form id="orderForm">
+      <div class="row">
+        <div class="col">
+          <label for="name">ชื่อ-นามสกุล</label>
+          <input id="name" name="name" type="text" required placeholder="เช่น นาย สมชาย ใจดี">
+        </div>
+        <div class="col">
+          <label for="email">อีเมล</label>
+          <input id="email" name="email" type="email" placeholder="email@example.com">
+        </div>
+        <div class="col">
+          <label for="phone">เบอร์โทรศัพท์</label>
+          <input id="phone" name="phone" type="tel" placeholder="081-234-5678">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="product">สินค้า</label>
+          <select id="product" name="product">
+            <option value="ring">แหวนทอง</option>
+            <option value="necklace">สร้อยคอทอง</option>
+            <option value="bracelet">กำไล</option>
+            <option value="bar">ทองคำแท่ง</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="pattern">ลาย</label>
+          <select id="pattern" name="pattern">
+            <option>ลายทั่วไป</option>
+            <option>ลายสามกษัตริย์</option>
+            <option>ลายโปร่ง</option>
+            <option>ลายสี่เสา</option>
+            <option>ลายดอกพิกุล</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="weight">น้ำหนัก (กรัม)</label>
+          <input id="weight" name="weight" type="number" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="quantity">จำนวน</label>
+          <input id="quantity" name="quantity" type="number" min="1" value="1">
+        </div>
+        <div class="col">
+          <label for="price">ราคาต่อชิ้น (฿)</label>
+          <input id="price" name="price" type="number" step="0.01" min="0">
+        </div>
+        <div class="col">
+          <label for="total">ราคารวม (คำนวณอัตโนมัติ)</label>
+          <input id="total" name="total" type="text" readonly>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col" style="display:flex;gap:12px;align-items:flex-start">
+          <div>
+            <label for="image">รูปตัวอย่างสินค้า (ถ้ามี)</label>
+            <input id="image" name="image" type="file" accept="image/*">
+          </div>
+          <div class="image-preview" id="imagePreview" title="preview">
+            <span class="muted">ไม่มีรูป</span>
+          </div>
+        </div>
+        <div class="col">
+          <label for="sku">รหัสสินค้า (SKU)</label>
+          <input id="sku" name="sku" type="text" placeholder="เช่น RING-001">
+        </div>
+        <div class="col">
+          <label for="status">สถานะ</label>
+          <select id="status" name="status">
+            <option>รอชำระ</option>
+            <option>สำเร็จ</option>
+            <option>ยกเลิก</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col" style="flex:2">
+          <label for="address">ที่อยู่จัดส่ง</label>
+          <textarea id="address" name="address" placeholder="ที่อยู่จัดส่งแบบละเอียด"></textarea>
+        </div>
+        <div class="col">
+          <label for="note">หมายเหตุ</label>
+          <textarea id="note" name="note" placeholder="เช่น สี, ความต้องการพิเศษ"></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn">บันทึกข้อมูล</button>
+        <button type="button" id="clearForm" class="btn secondary">ล้างฟอร์ม</button>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button type="button" id="exportCsv" class="btn secondary">ส่งออก CSV</button>
+          <button type="button" id="clearAll" class="btn secondary">ลบรายการทั้งหมด</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="list">
+      <h3 style="margin-top:20px">รายการที่บันทึก (อ่านอย่างเดียว)</h3>
+      <p class="muted">หน้านี้เป็นหน้าสำหรับกรอกข้อมูลเท่านั้น หากต้องการแก้ไขหรือลบรายการ ให้เข้าสู่ระบบหลังบ้าน: <a href="admin.html">เข้าสู่ระบบหลังบ้าน</a></p>
+      <table id="recordsTable">
+        <thead>
+          <tr><th>ลูกค้า</th><th>สินค้า</th><th>ลาย/น้ำหนัก</th><th>จำนวน</th><th>ราคา/ชิ้น</th><th>รวม</th><th>รูป</th><th class="small">วันที่</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script>
+    // Contract
+    // Inputs: form fields
+    // Outputs: stored records in localStorage under 'orders'
+    // Errors: validation for required name and quantity
+
+    function $(id){return document.getElementById(id)}
+
+    const form = $('orderForm');
+    const recordsKey = 'orders';
+    const tableBody = document.querySelector('#recordsTable tbody');
+
+    function loadRecords(){
+      try{
+        const raw = localStorage.getItem(recordsKey);
+        return raw? JSON.parse(raw): [];
+      }catch(e){console.error(e);return []}
+    }
+
+    function saveRecords(list){
+      localStorage.setItem(recordsKey, JSON.stringify(list));
+    }
+
+    function render(){
+      const list = loadRecords();
+      tableBody.innerHTML = '';
+      if(!list.length){
+        tableBody.innerHTML = '<tr><td colspan="9" class="small">ยังไม่มีรายการ</td></tr>';
+        return;
+      }
+      list.forEach((r,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(r.name)}</strong><div class="muted">${escapeHtml(r.phone||r.email||'')}</div></td>
+          <td>${escapeHtml(r.product)}<div class="muted">SKU: ${escapeHtml(r.sku||'')}</div></td>
+          <td>${escapeHtml(r.pattern)} / ${r.weight||''} g</td>
+          <td>${r.quantity}</td>
+          <td>${r.price||''}</td>
+          <td>${r.total}</td>
+          <td>${r.image? '<img src="'+r.image+'" style="width:56px;height:40px;object-fit:cover;border-radius:6px">':'-'}</td>
+          <td class="small">${r.date}</td>
+              <td></td>
+        `;
+        tableBody.appendChild(tr);
+      })
+    }
+
+    function escapeHtml(s){
+      if(!s) return '';
+      return String(s).replace(/[&<>\"]/g, function(c){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c] || c;
+      });
+    }
+
+    function computeTotal(){
+      const qty = Number($('quantity').value)||0;
+      const price = Number($('price').value)||0;
+      const total = (qty*price).toFixed(2);
+      $('total').value = total>0? total : '';
+    }
+
+    $('quantity').addEventListener('input', computeTotal);
+    $('price').addEventListener('input', computeTotal);
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = $('name').value.trim();
+      if(!name){alert('กรุณากรอกชื่อ');return}
+      const record = {
+        name,
+        email: $('email').value.trim(),
+        phone: $('phone').value.trim(),
+        product: $('product').value,
+        pattern: $('pattern').value,
+        weight: $('weight').value,
+        quantity: Number($('quantity').value)||1,
+        price: Number($('price').value)||0,
+        total: $('total').value || ((Number($('quantity').value)||1)*(Number($('price').value)||0)).toFixed(2),
+        sku: $('sku').value.trim(),
+        status: $('status').value,
+        image: $('imagePreview').dataset.src || '',
+        address: $('address').value.trim(),
+        note: $('note').value.trim(),
+        date: new Date().toLocaleString('th-TH')
+      };
+      const list = loadRecords();
+      list.unshift(record);
+      saveRecords(list);
+      render();
+      form.reset();
+      $('total').value='';
+      $('imagePreview').innerHTML = '<span class="muted">ไม่มีรูป</span>';
+      showToast('บันทึกเรียบร้อย');
+    });
+
+    // NOTE: edit/remove are admin-only actions and not available on public page
+
+    $('clearForm').addEventListener('click', ()=>{if(confirm('ต้องการล้างฟอร์มหรือไม่?')) form.reset();});
+
+    $('clearAll').addEventListener('click', ()=>{
+      if(confirm('ลบรายการทั้งหมดในเครื่อง?')){
+        localStorage.removeItem(recordsKey);
+        render();
+      }
+    });
+
+    function toCsv(rows){
+      const headers = ['name','email','phone','product','pattern','weight','quantity','price','total','address','note','date'];
+      const lines = [headers.join(',')];
+      rows.forEach(r=>{
+        const vals = headers.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`);
+        lines.push(vals.join(','));
+      });
+      return lines.join('\n');
+    }
+
+    $('exportCsv').addEventListener('click', ()=>{
+      const rows = loadRecords();
+      if(!rows.length){alert('ไม่มีข้อมูลให้ส่งออก');return}
+      const csv = toCsv(rows);
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // image upload and preview
+    $('image').addEventListener('change', function(){
+      const f = this.files && this.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const src = ev.target.result;
+        $('imagePreview').innerHTML = '<img src="'+src+'">';
+        $('imagePreview').dataset.src = src;
+      }
+      reader.readAsDataURL(f);
+    });
+
+    function showToast(msg,timeout=2200){
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), timeout);
+    }
+
+    // initial render
+    render();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — หลังบ้าน ห้างทอง</title>
+  <style>
+    :root{--muted:#6b6b6b;--accent:#b8860b;--gold-1:#FFD700;--gold-2:#FDB931}
+    body{font-family:Inter,Segoe UI,Roboto,Arial;margin:0;background:#f7f6f3;color:#111}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    .panel{background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 22px rgba(86,64,23,0.06)}
+    h1{margin:0 0 8px;color:#5b3a08}
+    .muted{color:var(--muted)}
+    .controls{display:flex;gap:8px}
+    .btn{background:linear-gradient(90deg,var(--gold-1),var(--gold-2));color:#111;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .btn.ghost{background:#fff;border:1px solid #eee}
+    input[type=password]{padding:10px;border-radius:8px;border:1px solid #eee;width:220px}
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{padding:10px;border-bottom:1px solid #f0eae0}
+    td img{width:64px;height:40px;object-fit:cover;border-radius:6px}
+    .actions{display:flex;gap:8px}
+    .hide{display:none}
+    /* modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .modal{background:#fff;padding:18px;border-radius:10px;max-width:720px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+    .modal h3{margin:0 0 8px}
+    .modal .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+    .modal label{font-size:13px;color:#5b3a1a}
+    .modal input, .modal select, .modal textarea{width:100%;padding:8px;border:1px solid #eee;border-radius:8px}
+    .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+    /* ensure modal preview images render normally */
+    #m_preview, #m_preview img{background:none!important;mix-blend-mode:normal!important;filter:none!important}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel" id="loginPanel">
+      <h1>หลังบ้าน — เข้าสู่ระบบ</h1>
+      <p class="muted">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบหลังบ้าน (รหัสเก็บใน localStorage ของเครื่องนี้)</p>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <input id="adminPass" type="password" placeholder="รหัสผ่านผู้ดูแล">
+        <button id="loginBtn" class="btn">เข้าสู่ระบบ</button>
+        <button id="setPass" class="btn ghost">ตั้งรหัสใหม่</button>
+      </div>
+    </div>
+
+    <div class="panel hide" id="adminPanel">
+      <h1>แดชบอร์ดหลังบ้าน</h1>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="searchBox" placeholder="ค้นหาชื่อลูกค้า / SKU / หมายเหตุ" style="padding:8px;border-radius:8px;border:1px solid #eee;flex:1">
+          <select id="filterProduct" style="padding:8px;border-radius:8px;border:1px solid #eee">
+            <option value="">ทุกหมวดหมู่</option>
+            <option value="ring">แหวนทอง</option>
+            <option value="necklace">สร้อยคอ</option>
+            <option value="bracelet">กำไล</option>
+            <option value="bar">ทองคำแท่ง</option>
+          </select>
+          <select id="filterStatus" style="padding:8px;border-radius:8px;border:1px solid #eee">
+            <option value="">ทุกสถานะ</option>
+            <option>รอชำระ</option>
+            <option>สำเร็จ</option>
+            <option>ยกเลิก</option>
+          </select>
+          <select id="sortBy" style="padding:8px;border-radius:8px;border:1px solid #eee">
+            <option value="date_desc">วันที่ (ใหม่ → เก่า)</option>
+            <option value="date_asc">วันที่ (เก่า → ใหม่)</option>
+            <option value="name_asc">ชื่อลูกค้า A → Z</option>
+            <option value="total_desc">ราคารวม (สูง → ต่ำ)</option>
+          </select>
+          <select id="pageSize" style="padding:8px;border-radius:8px;border:1px solid #eee">
+            <option value="10">10/หน้า</option>
+            <option value="25">25/หน้า</option>
+            <option value="50">50/หน้า</option>
+          </select>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="muted">จัดการรายการสั่งซื้อและข้อมูลลูกค้า</div>
+          <div class="controls">
+            <button id="selectAllBtn" class="btn ghost">เลือกทั้งหมด</button>
+            <button id="bulkDelete" class="btn ghost">ลบที่เลือก</button>
+            <button id="exportSelected" class="btn">ส่งออกที่เลือก</button>
+            <input id="importCsv" type="file" accept=".csv" style="display:none">
+            <button id="importBtn" class="btn ghost">นำเข้า CSV</button>
+            <button id="undoBtn" class="btn ghost">Undo ลบล่าสุด</button>
+            <button id="auditBtn" class="btn ghost">Audit log</button>
+            <button id="logoutBtn" class="btn ghost">ออกจากระบบ</button>
+            <button id="exportCsv" class="btn">ส่งออก CSV</button>
+            <button id="clearAll" class="btn ghost">ลบทั้งหมด</button>
+          </div>
+        </div>
+      </div>
+
+      <table id="adminTable">
+        <thead>
+          <tr><th style="width:40px"></th><th>ลูกค้า</th><th>สินค้า</th><th>ลาย/น้ำหนัก</th><th>จำนวน</th><th>ราคา</th><th>รวม</th><th>รูป</th><th>วันที่</th><th>การกระทำ</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal for editing record -->
+  <div id="editModal" class="modal-backdrop hide" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>แก้ไขรายการ</h3>
+      <div id="modalBody">
+        <div class="row">
+          <div style="flex:2">
+            <label>ชื่อ-นามสกุล</label>
+            <input id="m_name" type="text">
+          </div>
+          <div style="flex:1">
+            <label>โทรศัพท์</label>
+            <input id="m_phone" type="text">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label>อีเมล</label>
+            <input id="m_email" type="email">
+          </div>
+          <div class="col">
+            <label>SKU</label>
+            <input id="m_sku" type="text">
+          </div>
+          <div class="col">
+            <label>สถานะ</label>
+            <select id="m_status"><option>รอชำระ</option><option>สำเร็จ</option><option>ยกเลิก</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label>สินค้า</label>
+            <select id="m_product"><option value="ring">แหวนทอง</option><option value="necklace">สร้อยคอทอง</option><option value="bracelet">กำไล</option><option value="bar">ทองคำแท่ง</option></select>
+          </div>
+          <div class="col">
+            <label>ลาย</label>
+            <input id="m_pattern" type="text">
+          </div>
+          <div class="col">
+            <label>น้ำหนัก (g)</label>
+            <input id="m_weight" type="number" step="0.01">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label>จำนวน</label>
+            <input id="m_quantity" type="number">
+          </div>
+          <div class="col">
+            <label>ราคา/ชิ้น</label>
+            <input id="m_price" type="number" step="0.01">
+          </div>
+          <div class="col">
+            <label>รวม</label>
+            <input id="m_total" type="text" readonly>
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex:2">
+            <label>ที่อยู่</label>
+            <textarea id="m_address"></textarea>
+          </div>
+          <div style="flex:1">
+            <label>หมายเหตุ</label>
+            <textarea id="m_note"></textarea>
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label>รูปสินค้า (อัปเดต)</label>
+            <input id="m_image" type="file" accept="image/*">
+          </div>
+          <div style="width:120px">
+            <label>Preview</label>
+            <div id="m_preview" style="width:120px;height:90px;border:1px solid #eee;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa">-</div>
+            <div style="margin-top:6px;text-align:center"><button id="m_remove_image" class="btn ghost" style="padding:6px 8px;font-size:12px">ลบรูป</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="m_cancel" class="btn ghost">ยกเลิก</button>
+        <button id="m_save" class="btn">บันทึกการเปลี่ยนแปลง</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const recordsKey = 'orders';
+    const adminKey = 'admin_pass';
+    const auditKey = 'audit_log';
+    const deletedKey = 'last_deleted';
+    function $(id){return document.getElementById(id)}
+
+    // Ensure records have stable unique ids
+    function ensureIds(){
+      const list = loadRecords();
+      let changed = false;
+      list.forEach(r=>{ if(!r.id){ r.id = 'id_'+Date.now()+'_'+Math.floor(Math.random()*10000); changed = true } });
+      if(changed) saveRecords(list);
+    }
+
+    function loadRecords(){
+      try{return JSON.parse(localStorage.getItem(recordsKey)||'[]')}catch(e){return[]}
+    }
+    function saveRecords(list){localStorage.setItem(recordsKey,JSON.stringify(list))}
+
+    // audit log
+    function pushAudit(action, details){
+      const log = JSON.parse(localStorage.getItem(auditKey)||'[]');
+      log.unshift({time:new Date().toLocaleString('th-TH'), action, details});
+      localStorage.setItem(auditKey, JSON.stringify(log));
+    }
+
+    // undo stack
+    function pushDeleted(items){
+      const stack = JSON.parse(localStorage.getItem(deletedKey)||'[]');
+      stack.unshift({time:new Date().toLocaleString('th-TH'), items});
+      // keep last 5
+      localStorage.setItem(deletedKey, JSON.stringify(stack.slice(0,5)));
+    }
+
+    // state for UI
+    let currentPage = 1;
+    let currentPageSize = Number($('pageSize').value || 10);
+
+    function applyFiltersAndSort(list){
+      const q = ($('searchBox').value||'').toLowerCase().trim();
+      const prod = $('filterProduct').value;
+      const status = $('filterStatus').value;
+      const sortBy = $('sortBy').value;
+      // filter
+      let out = list.filter(r=>{
+        if(prod && r.product !== prod) return false;
+        if(status && r.status !== status) return false;
+        if(q){
+          const hay = (r.name+' '+(r.sku||'')+' '+(r.note||'')+' '+(r.email||'')).toLowerCase();
+          if(!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      // sort
+      out.sort((a,b)=>{
+        if(sortBy==='date_desc') return new Date(b.date) - new Date(a.date);
+        if(sortBy==='date_asc') return new Date(a.date) - new Date(b.date);
+        if(sortBy==='name_asc') return (a.name||'').localeCompare(b.name||'');
+        if(sortBy==='total_desc') return (Number(b.total)||0) - (Number(a.total)||0);
+        return 0;
+      });
+      return out;
+    }
+
+    function renderAdmin(){
+      ensureIds();
+      const tbody = $('adminTable').querySelector('tbody');
+      const list = loadRecords();
+      const filtered = applyFiltersAndSort(list);
+      // pagination
+      currentPageSize = Number($('pageSize').value||10);
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total/currentPageSize));
+      if(currentPage>totalPages) currentPage = totalPages;
+      const start = (currentPage-1)*currentPageSize;
+      const pageItems = filtered.slice(start, start+currentPageSize);
+
+      tbody.innerHTML = '';
+      if(!pageItems.length){tbody.innerHTML = '<tr><td colspan="10" class="muted">ยังไม่มีรายการ</td></tr>'; renderPagination(totalPages); return}
+      pageItems.forEach((r)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" data-id="${r.id}"></td>
+          <td><strong>${escapeHtml(r.name||'')}</strong><div class="muted">${escapeHtml(r.phone||r.email||'')}</div></td>
+          <td>${escapeHtml(r.product||'')}<div class="muted">SKU: ${escapeHtml(r.sku||'')}</div></td>
+          <td>${escapeHtml(r.pattern||'')} / ${r.weight||''} g</td>
+          <td>${r.quantity}</td>
+          <td>${r.price}</td>
+          <td>${r.total}</td>
+          <td>${r.image?'<img src="'+r.image+'">':'-'}</td>
+          <td>${r.date||''}</td>
+          <td class="actions"><button class="btn ghost" onclick="openEditById('${r.id}')">แก้ไข</button><button class="btn ghost" onclick="delById('${r.id}')">ลบ</button></td>
+        `;
+        tbody.appendChild(tr);
+      })
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages){
+      // remove old if exists
+      let pager = document.getElementById('pagerAdmin');
+      if(!pager){ pager = document.createElement('div'); pager.id='pagerAdmin'; pager.style.marginTop='12px'; document.querySelector('.panel#adminPanel').appendChild(pager); }
+      pager.innerHTML = '';
+      const info = document.createElement('div'); info.textContent = `หน้า ${currentPage} / ${totalPages}`; pager.appendChild(info);
+      const prev = document.createElement('button'); prev.textContent='‹ ก่อนหน้า'; prev.className='btn ghost'; prev.style.marginLeft='12px'; prev.disabled = currentPage<=1; prev.onclick=()=>{currentPage--; renderAdmin()}; pager.appendChild(prev);
+      const next = document.createElement('button'); next.textContent='ถัดไป ›'; next.className='btn ghost'; next.style.marginLeft='8px'; next.disabled = currentPage>=totalPages; next.onclick=()=>{currentPage++; renderAdmin()}; pager.appendChild(next);
+    }
+
+    function toCsv(rows){
+      const headers = ['name','email','phone','product','pattern','weight','quantity','price','total','address','note','date','sku','status'];
+      const lines = [headers.join(',')];
+      rows.forEach(r=>{const vals=headers.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`);lines.push(vals.join(','))});
+      return lines.join('\n');
+    }
+
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"]/g, function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]||c}) }
+
+    $('loginBtn').addEventListener('click', ()=>{
+      const pass = $('adminPass').value || '';
+      const expected = localStorage.getItem(adminKey) || 'admin123';
+      // check hash equality (simple, not cryptographically secure) - support plaintext for backward compat
+      if(pass === expected || ('#'+btoa(pass)) === expected){
+        $('loginPanel').classList.add('hide');
+        $('adminPanel').classList.remove('hide');
+        renderAdmin();
+      } else alert('รหัสผ่านไม่ถูกต้อง');
+    });
+
+    // set hashed pass (base64) for light obfuscation
+    $('setPass').addEventListener('click', ()=>{
+      const pass = prompt('ใส่รหัสผ่านใหม่ (เก็บไว้ในเครื่องนี้)');
+      if(pass){ localStorage.setItem(adminKey, '#'+btoa(pass)); alert('ตั้งรหัสผ่านเรียบร้อย (เก็บแบบเข้ารหัสเล็กน้อยบนเครื่องนี้)') }
+    });
+
+    $('logoutBtn').addEventListener('click', ()=>{location.reload()});
+
+    window.delById = function(id){ if(!confirm('ต้องการลบรายการนี้หรือไม่?')) return; const list = loadRecords(); const idx = list.findIndex(x=>x.id===id); if(idx===-1) return; const item = list.splice(idx,1); saveRecords(list); pushDeleted(item); pushAudit('delete', {id, name:item[0].name}); renderAdmin(); }
+    window.openEditById = function(id){ const list = loadRecords(); const idx = list.findIndex(x=>x.id===id); if(idx===-1) return alert('ไม่พบรายการ'); openEdit(idx) }
+
+    // bulk/select actions
+    $('selectAllBtn').addEventListener('click', ()=>{
+      const boxes = document.querySelectorAll('#adminTable tbody input[type=checkbox]');
+      const all = Array.from(boxes).every(b=>b.checked);
+      boxes.forEach(b=>b.checked = !all);
+    });
+
+    $('bulkDelete').addEventListener('click', ()=>{
+      const sel = Array.from(document.querySelectorAll('#adminTable tbody input[type=checkbox]:checked')).map(i=>i.dataset.id);
+      if(!sel.length) return alert('ยังไม่ได้เลือก');
+      if(!confirm('ลบ '+sel.length+' รายการที่เลือก?')) return;
+      let list = loadRecords();
+      const removed = [];
+      list = list.filter(r=>{ if(sel.includes(r.id)){ removed.push(r); return false } return true });
+      saveRecords(list); pushDeleted(removed); pushAudit('bulk_delete', {count:removed.length}); renderAdmin();
+    });
+
+    $('exportSelected').addEventListener('click', ()=>{
+      const sel = Array.from(document.querySelectorAll('#adminTable tbody input[type=checkbox]:checked')).map(i=>i.dataset.id);
+      if(!sel.length) return alert('ยังไม่ได้เลือก');
+      const list = loadRecords().filter(r=>sel.includes(r.id));
+      const csv = toCsv(list);
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='selected_'+new Date().toISOString().slice(0,10)+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    });
+
+    // import CSV
+    $('importBtn').addEventListener('click', ()=>{ $('importCsv').click(); });
+    $('importCsv').addEventListener('change', function(){ const f=this.files[0]; if(!f) return; const r=new FileReader(); r.onload=function(e){ const text=e.target.result; const lines=text.split(/\r?\n/).filter(Boolean); if(!lines.length) return alert('ไฟล์ว่าง'); const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim()); const rows=lines.slice(1); const list=loadRecords(); const added=[]; rows.forEach(row=>{ const cols=row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'')); if(cols.length!==headers.length) return; const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]); obj.id='id_'+Date.now()+'_'+Math.floor(Math.random()*10000); list.unshift(obj); added.push(obj); }); saveRecords(list); pushAudit('import',{count:added.length}); renderAdmin(); alert('นำเข้า '+added.length+' รายการ'); }; r.readAsText(f); });
+
+    // undo last delete
+    $('undoBtn').addEventListener('click', ()=>{
+      const stack = JSON.parse(localStorage.getItem(deletedKey)||'[]'); if(!stack.length) return alert('ไม่มีรายการให้กู้คืน'); const top = stack.shift(); const list = loadRecords(); list.unshift(...top.items); saveRecords(list); localStorage.setItem(deletedKey, JSON.stringify(stack)); pushAudit('undo',{restored:top.items.length}); renderAdmin(); alert('คืนข้อมูล '+top.items.length+' รายการ');
+    });
+
+    // audit log modal
+    $('auditBtn').addEventListener('click', ()=>{
+      const logs = JSON.parse(localStorage.getItem(auditKey)||'[]');
+      let msg = '--- Audit log ---\n'; logs.slice(0,50).forEach(l=>{ msg += `${l.time} | ${l.action} | ${JSON.stringify(l.details)}\n` }); alert(msg);
+    });
+
+    $('exportCsv').addEventListener('click', ()=>{
+      const rows = loadRecords(); if(!rows.length){alert('ไม่มีข้อมูล');return}
+      const csv = toCsv(rows); const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='orders_admin_'+new Date().toISOString().slice(0,10)+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    });
+
+    $('clearAll').addEventListener('click', ()=>{if(confirm('ลบรายการทั้งหมด?')){ const list = loadRecords(); pushDeleted(list); pushAudit('clear_all', {count:list.length}); localStorage.removeItem(recordsKey); renderAdmin()}})
+  
+    // Modal and edit logic
+    let editingIndex = null;
+    function openEdit(idx){
+      const list = loadRecords();
+      const r = list[idx];
+      if(!r) return alert('ไม่พบรายการ');
+      editingIndex = idx;
+      $('m_name').value = r.name||'';
+      $('m_phone').value = r.phone||'';
+      $('m_email').value = r.email||'';
+      $('m_sku').value = r.sku||'';
+      $('m_status').value = r.status||'รอชำระ';
+      $('m_product').value = r.product||'ring';
+      $('m_pattern').value = r.pattern||'';
+      $('m_weight').value = r.weight||'';
+      $('m_quantity').value = r.quantity||1;
+      $('m_price').value = r.price||'';
+      $('m_total').value = r.total||'';
+      $('m_address').value = r.address||'';
+      $('m_note').value = r.note||'';
+      // clear file input so browser doesn't show leftover filename
+      try{ $('m_image').value = ''; }catch(e){}
+      if(r.image){
+        $('m_preview').innerHTML = '<img src="'+r.image+'" style="width:100%;height:100%;object-fit:cover">';
+        $('m_preview').dataset.src = r.image;
+      } else {
+        $('m_preview').innerHTML='-';
+        delete $('m_preview').dataset.src
+      }
+      $('editModal').classList.remove('hide');
+      $('editModal').setAttribute('aria-hidden','false');
+      // prevent background scrolling
+      document.body.style.overflow = 'hidden';
+      // click on backdrop to close
+      const backdrop = $('editModal');
+      backdrop.addEventListener('click', function onBackdrop(e){
+        if(e.target === backdrop){ closeEdit(); backdrop.removeEventListener('click', onBackdrop); }
+      });
+      // ESC to close
+      function onEsc(e){ if(e.key === 'Escape'){ closeEdit(); window.removeEventListener('keydown', onEsc); } }
+      window.addEventListener('keydown', onEsc);
+    }
+
+    function closeEdit(){
+      editingIndex = null;
+      $('editModal').classList.add('hide');
+      $('editModal').setAttribute('aria-hidden','true');
+      // restore scrolling
+      document.body.style.overflow = '';
+    }
+
+    window.edit = function(idx){ openEdit(idx); }
+
+    $('m_cancel').addEventListener('click', ()=>{ closeEdit(); });
+
+    // compute modal total
+    function computeModalTotal(){
+      const q = Number($('m_quantity').value)||0;
+      const p = Number($('m_price').value)||0;
+      $('m_total').value = q && p ? (q*p).toFixed(2) : '';
+    }
+    ['m_quantity','m_price'].forEach(id=>{ $(''+id).addEventListener('input', computeModalTotal); });
+
+    // image preview in modal
+    $('m_image').addEventListener('change', function(){
+      const f = this.files && this.files[0];
+      if(!f) return;
+      const r = new FileReader();
+      r.onload = function(ev){
+        $('m_preview').innerHTML = '<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+        $('m_preview').dataset.src = ev.target.result;
+      }
+      r.readAsDataURL(f);
+    });
+
+    // remove preview/image
+    $('m_remove_image').addEventListener('click', function(){
+      if(confirm('ต้องการลบรูปตัวอย่างใช่หรือไม่?')){
+        $('m_preview').innerHTML = '-';
+        delete $('m_preview').dataset.src;
+        try{ $('m_image').value = ''; }catch(e){}
+      }
+    });
+
+    // save modal edits
+    $('m_save').addEventListener('click', ()=>{
+      if(editingIndex===null) return;
+      const list = loadRecords();
+      const r = list[editingIndex] || {};
+      r.name = $('m_name').value.trim();
+      r.phone = $('m_phone').value.trim();
+      r.email = $('m_email').value.trim();
+      r.sku = $('m_sku').value.trim();
+      r.status = $('m_status').value;
+      r.product = $('m_product').value;
+      r.pattern = $('m_pattern').value.trim();
+      r.weight = $('m_weight').value;
+      r.quantity = Number($('m_quantity').value)||1;
+      r.price = Number($('m_price').value)||0;
+      r.total = $('m_total').value || (r.quantity * r.price).toFixed(2);
+      r.address = $('m_address').value.trim();
+      r.note = $('m_note').value.trim();
+      if($('m_preview').dataset.src) r.image = $('m_preview').dataset.src;
+      r.date = new Date().toLocaleString('th-TH');
+      list[editingIndex] = r;
+      saveRecords(list);
+      renderAdmin();
+      closeEdit();
+      alert('บันทึกการแก้ไขเรียบร้อย');
+    });
+  </script>
+</body>
+</html>
